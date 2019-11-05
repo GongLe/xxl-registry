@@ -7,9 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.TimeUnit;
 
 /**
  * registry client, auto heatbeat registry info, auto monitor discovery info
@@ -38,14 +35,11 @@ public class XxlRegistryClient {
         if (adminAddress==null || adminAddress.trim().length()==0) {
             throw new RuntimeException("xxl-registry adminAddress empty");
         }
-        if (env==null || env.trim().length()==0) {
-            throw new RuntimeException("xxl-registry env empty");
+        if (biz==null || biz.trim().length()<4 || biz.trim().length()>255) {
+            throw new RuntimeException("xxl-registry biz empty Invalid[4~255]");
         }
-        if (biz==null || biz.trim().length()==0) {
-            throw new RuntimeException("xxl-registry biz empty");
-        }
-        if (env==null || env.trim().length()==0) {
-            throw new RuntimeException("xxl-registry env empty");
+        if (env==null || env.trim().length()<4 || env.trim().length()>255) {
+            throw new RuntimeException("xxl-registry biz env Invalid[4~255]");
         }
 
         // parse
@@ -57,7 +51,6 @@ public class XxlRegistryClient {
         }
 
     }
-
 
     /**
      * registry
@@ -72,10 +65,10 @@ public class XxlRegistryClient {
             throw new RuntimeException("xxl-registry registryParamList empty");
         }
         for (XxlRegistryParam registryParam: registryParamList) {
-            if (registryParam.getKey()==null || registryParam.getKey().trim().length()==0) {
-                throw new RuntimeException("xxl-registry registryParamList#key empty");
+            if (registryParam.getKey()==null || registryParam.getKey().trim().length()<4 || registryParam.getKey().trim().length()>255) {
+                throw new RuntimeException("xxl-registry registryParamList#key Invalid[4~255]");
             }
-            if (registryParam.getValue()==null || registryParam.getValue().trim().length()==0) {
+            if (registryParam.getValue()==null || registryParam.getValue().trim().length()<4 || registryParam.getValue().trim().length()>255) {
                 throw new RuntimeException("xxl-registry registryParamList#value empty");
             }
         }
