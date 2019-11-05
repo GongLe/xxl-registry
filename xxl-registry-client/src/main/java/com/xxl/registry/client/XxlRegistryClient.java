@@ -69,7 +69,7 @@ public class XxlRegistryClient {
                 throw new RuntimeException("xxl-registry registryParamList#key Invalid[4~255]");
             }
             if (registryParam.getValue()==null || registryParam.getValue().trim().length()<4 || registryParam.getValue().trim().length()>255) {
-                throw new RuntimeException("xxl-registry registryParamList#value empty");
+                throw new RuntimeException("xxl-registry registryParamList#value Invalid[4~255]");
             }
         }
 
@@ -129,11 +129,11 @@ public class XxlRegistryClient {
             throw new RuntimeException("xxl-registry registryParamList empty");
         }
         for (XxlRegistryParam registryParam: registryParamList) {
-            if (registryParam.getKey()==null || registryParam.getKey().trim().length()==0) {
-                throw new RuntimeException("xxl-registry registryParamList#key empty");
+            if (registryParam.getKey()==null || registryParam.getKey().trim().length()<4 || registryParam.getKey().trim().length()>255) {
+                throw new RuntimeException("xxl-registry registryParamList#key Invalid[4~255]");
             }
-            if (registryParam.getValue()==null || registryParam.getValue().trim().length()==0) {
-                throw new RuntimeException("xxl-registry registryParamList#value empty");
+            if (registryParam.getValue()==null || registryParam.getValue().trim().length()<4 || registryParam.getValue().trim().length()>255) {
+                throw new RuntimeException("xxl-registry registryParamList#value Invalid[4~255]");
             }
         }
 
@@ -198,10 +198,9 @@ public class XxlRegistryClient {
         String paramsJson = BasicJson.toJson(keys);
 
         // result
-        Map<String, Object> respObj = requestAndValid(pathUrl, paramsJson, 30);
+        Map<String, Object> respObj = requestAndValid(pathUrl, paramsJson, 60);
         return respObj!=null?true:false;
     }
-
 
 
 }
