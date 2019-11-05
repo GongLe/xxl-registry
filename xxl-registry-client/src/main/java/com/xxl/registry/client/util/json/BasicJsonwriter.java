@@ -39,8 +39,8 @@ public class BasicJsonwriter {
 
         // replace
         String str = json.toString();
-        if (str.contains("\n")){
-            str = str.replaceAll("\\n","\\\\n");
+        if (str.contains("\n")) {
+            str = str.replaceAll("\\n", "\\\\n");
         }
         if (str.contains("\t")) {
             str = str.replaceAll("\\t", "\\\\t");
