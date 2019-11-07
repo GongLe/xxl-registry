@@ -42,10 +42,10 @@ public class XxlRegistryServiceImpl implements IXxlRegistryService, Initializing
 
     @Value("${xxl.registry.data.filepath}")
     private String registryDataFilePath;
-    @Value("${xxl.registry.beattime}")
-    private int registryBeatTime;
     @Value("${xxl.registry.accessToken}")
     private String accessToken;
+
+    private int registryBeatTime = 10;
 
 
     @Override
@@ -72,7 +72,6 @@ public class XxlRegistryServiceImpl implements IXxlRegistryService, Initializing
 
             // sendRegistryDataUpdateMessage (delete)
             xxlRegistry.setData("");
-            xxlRegistry.setVersion(UUID.randomUUID().toString().replaceAll("-", ""));
             sendRegistryDataUpdateMessage(xxlRegistry);
         }
 
@@ -118,14 +117,8 @@ public class XxlRegistryServiceImpl implements IXxlRegistryService, Initializing
             return new ReturnT<String>(ReturnT.FAIL_CODE, "ID参数非法");
         }
 
-        // fill version
-        boolean needMessage = false;
-        if (!xxlRegistry.getData().equals(exist.getData())) {
-            xxlRegistry.setVersion(UUID.randomUUID().toString().replaceAll("-", ""));
-            needMessage = true;
-        } else {
-            xxlRegistry.setVersion(exist.getVersion());
-        }
+        // if refresh
+        boolean needMessage = !xxlRegistry.getData().equals(exist.getData());
 
         int ret = xxlRegistryDao.update(xxlRegistry);
         needMessage = ret>0?needMessage:false;
@@ -164,9 +157,6 @@ public class XxlRegistryServiceImpl implements IXxlRegistryService, Initializing
         if (exist != null) {
             return new ReturnT<String>(ReturnT.FAIL_CODE, "注册Key请勿重复");
         }
-
-        // fill version
-        xxlRegistry.setVersion(UUID.randomUUID().toString().replaceAll("-", ""));
 
         int ret = xxlRegistryDao.add(xxlRegistry);
         boolean needMessage = ret>0?true:false;
@@ -297,7 +287,7 @@ public class XxlRegistryServiceImpl implements IXxlRegistryService, Initializing
     public DeferredResult<ReturnT<String>> monitor(String accessToken, String biz, String env, List<String> keys) {
 
         // init
-        DeferredResult deferredResult = new DeferredResult(30 * 1000L, new ReturnT<>(ReturnT.FAIL_CODE, "Monitor timeout."));
+        DeferredResult deferredResult = new DeferredResult(30 * 1000L, new ReturnT<>(ReturnT.SUCCESS_CODE, "Monitor timeout, no key updated."));
 
         // valid
         if (this.accessToken!=null && this.accessToken.trim().length()>0 && !this.accessToken.equals(accessToken)) {
@@ -362,7 +352,6 @@ public class XxlRegistryServiceImpl implements IXxlRegistryService, Initializing
             xxlRegistry.setEnv(xxlRegistryData.getEnv());
             xxlRegistry.setKey(xxlRegistryData.getKey());
             xxlRegistry.setData(dataJson);
-            xxlRegistry.setVersion(UUID.randomUUID().toString().replaceAll("-", ""));
             xxlRegistryDao.add(xxlRegistry);
             needMessage = true;
         } else {
@@ -374,7 +363,6 @@ public class XxlRegistryServiceImpl implements IXxlRegistryService, Initializing
 
             if (!xxlRegistry.getData().equals(dataJson)) {
                 xxlRegistry.setData(dataJson);
-                xxlRegistry.setVersion(UUID.randomUUID().toString().replaceAll("-", ""));
                 xxlRegistryDao.update(xxlRegistry);
                 needMessage = true;
             }
@@ -399,6 +387,11 @@ public class XxlRegistryServiceImpl implements IXxlRegistryService, Initializing
 
     @Override
     public void afterPropertiesSet() throws Exception {
+
+        // valid
+        if (registryDataFilePath==null || registryDataFilePath.trim().length()==0) {
+            throw new RuntimeException("xxl-registry, registryDataFilePath empty.");
+        }
 
         /**
          * registry registry data         (client-num/10 s)
@@ -551,6 +544,19 @@ public class XxlRegistryServiceImpl implements IXxlRegistryService, Initializing
             @Override
             public void run() {
                 while (!executorStoped) {
+
+                    // align to beattime
+                    try {
+                        long sleepSecond = registryBeatTime - (System.currentTimeMillis()/1000)%registryBeatTime;
+                        if (sleepSecond>0 && sleepSecond<registryBeatTime) {
+                            TimeUnit.SECONDS.sleep(sleepSecond);
+                        }
+                    } catch (Exception e) {
+                        if (!executorStoped) {
+                            logger.error(e.getMessage(), e);
+                        }
+                    }
+
                     try {
                         // clean old registry-data in db
                         xxlRegistryDataDao.cleanData(registryBeatTime * 3);
@@ -586,7 +592,6 @@ public class XxlRegistryServiceImpl implements IXxlRegistryService, Initializing
                                     // check update, sync db
                                     if (!registryItem.getData().equals(dataJson)) {
                                         registryItem.setData(dataJson);
-                                        registryItem.setVersion(UUID.randomUUID().toString().replaceAll("-", ""));
                                         xxlRegistryDao.update(registryItem);
                                     }
                                 }
@@ -692,7 +697,7 @@ public class XxlRegistryServiceImpl implements IXxlRegistryService, Initializing
         if (deferredResultList != null) {
             registryDeferredResultMap.remove(fileName);
             for (DeferredResult deferredResult: deferredResultList) {
-                deferredResult.setResult(new ReturnT<>(ReturnT.FAIL_CODE, "Monitor key update."));
+                deferredResult.setResult(new ReturnT<>(ReturnT.SUCCESS_CODE, "Monitor key update."));
             }
         }
 
