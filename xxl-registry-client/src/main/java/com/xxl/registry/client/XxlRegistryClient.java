@@ -1,6 +1,6 @@
 package com.xxl.registry.client;
 
-import com.xxl.registry.client.model.XxlRegistryParam;
+import com.xxl.registry.client.model.XxlRegistryDataParamVO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,7 +18,7 @@ public class XxlRegistryClient {
     private static Logger logger = LoggerFactory.getLogger(XxlRegistryClient.class);
 
 
-    private volatile Set<XxlRegistryParam> registryData = new HashSet<>();
+    private volatile Set<XxlRegistryDataParamVO> registryData = new HashSet<>();
     private volatile ConcurrentMap<String, TreeSet<String>> discoveryData = new ConcurrentHashMap<>();
 
     private Thread registryThread;
@@ -28,19 +28,19 @@ public class XxlRegistryClient {
 
     private XxlRegistryBaseClient registryBaseClient;
 
-    public XxlRegistryClient(String adminAddress, String biz, String env) {
-        registryBaseClient = new XxlRegistryBaseClient(adminAddress, biz, env);
-        logger.info(">>>>>>>>>>> xxl-registry, XxlRegistryClient init .... [adminAddress={}, biz={}, env={}]", adminAddress, biz, env);
+    public XxlRegistryClient(String adminAddress, String accessToken, String biz, String env) {
+        registryBaseClient = new XxlRegistryBaseClient(adminAddress, accessToken, biz, env);
+        logger.info(">>>>>>>>>>> xxl-registry, XxlRegistryClient init .... [adminAddress={}, accessToken={}, biz={}, env={}]", adminAddress, accessToken, biz, env);
 
         // registry thread
         registryThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                while (!registryThreadStop){
+                while (!registryThreadStop) {
                     try {
                         if (registryData.size() > 0) {
 
-                            boolean ret = registryBaseClient.registry(new ArrayList<XxlRegistryParam>(registryData));
+                            boolean ret = registryBaseClient.registry(new ArrayList<XxlRegistryDataParamVO>(registryData));
                             logger.info(">>>>>>>>>>> xxl-registry, refresh registry data {}, registryData = {}", ret?"success":"fail",registryData);
                         }
                     } catch (Exception e) {
@@ -48,7 +48,6 @@ public class XxlRegistryClient {
                             logger.error(">>>>>>>>>>> xxl-registry, registryThread error.", e);
                         }
                     }
-
                     try {
                         TimeUnit.SECONDS.sleep(10);
                     } catch (Exception e) {
@@ -60,11 +59,9 @@ public class XxlRegistryClient {
                 logger.info(">>>>>>>>>>> xxl-registry, registryThread stoped.");
             }
         });
-
         registryThread.setName("xxl-registry, XxlRegistryClient registryThread.");
         registryThread.setDaemon(true);
         registryThread.start();
-
 
         // discovery thread
         discoveryThread = new Thread(new Runnable() {
@@ -114,32 +111,33 @@ public class XxlRegistryClient {
         }
     }
 
+
     /**
      * registry
      *
-     * @param registryParamList
+     * @param registryDataList
      * @return
      */
-    public boolean registry(List<XxlRegistryParam> registryParamList){
+    public boolean registry(List<XxlRegistryDataParamVO> registryDataList){
 
         // valid
-        if (registryParamList==null || registryParamList.size()==0) {
-            throw new RuntimeException("xxl-registry registryParamList empty");
+        if (registryDataList==null || registryDataList.size()==0) {
+            throw new RuntimeException("xxl-registry registryDataList empty");
         }
-        for (XxlRegistryParam registryParam: registryParamList) {
+        for (XxlRegistryDataParamVO registryParam: registryDataList) {
             if (registryParam.getKey()==null || registryParam.getKey().trim().length()<4 || registryParam.getKey().trim().length()>255) {
-                throw new RuntimeException("xxl-registry registryParamList#key Invalid[4~255]");
+                throw new RuntimeException("xxl-registry registryDataList#key Invalid[4~255]");
             }
             if (registryParam.getValue()==null || registryParam.getValue().trim().length()<4 || registryParam.getValue().trim().length()>255) {
-                throw new RuntimeException("xxl-registry registryParamList#value Invalid[4~255]");
+                throw new RuntimeException("xxl-registry registryDataList#value Invalid[4~255]");
             }
         }
 
         // cache
-        registryData.addAll(registryParamList);
+        registryData.addAll(registryDataList);
 
         // remote
-        registryBaseClient.registry(registryParamList);
+        registryBaseClient.registry(registryDataList);
 
         return true;
     }
@@ -149,28 +147,28 @@ public class XxlRegistryClient {
     /**
      * remove
      *
-     * @param registryParamList
+     * @param registryDataList
      * @return
      */
-    public boolean remove(List<XxlRegistryParam> registryParamList) {
+    public boolean remove(List<XxlRegistryDataParamVO> registryDataList) {
         // valid
-        if (registryParamList==null || registryParamList.size()==0) {
-            throw new RuntimeException("xxl-registry registryParamList empty");
+        if (registryDataList==null || registryDataList.size()==0) {
+            throw new RuntimeException("xxl-registry registryDataList empty");
         }
-        for (XxlRegistryParam registryParam: registryParamList) {
+        for (XxlRegistryDataParamVO registryParam: registryDataList) {
             if (registryParam.getKey()==null || registryParam.getKey().trim().length()<4 || registryParam.getKey().trim().length()>255) {
-                throw new RuntimeException("xxl-registry registryParamList#key Invalid[4~255]");
+                throw new RuntimeException("xxl-registry registryDataList#key Invalid[4~255]");
             }
             if (registryParam.getValue()==null || registryParam.getValue().trim().length()<4 || registryParam.getValue().trim().length()>255) {
-                throw new RuntimeException("xxl-registry registryParamList#value Invalid[4~255]");
+                throw new RuntimeException("xxl-registry registryDataList#value Invalid[4~255]");
             }
         }
 
         // cache
-        registryData.removeAll(registryParamList);
+        registryData.removeAll(registryDataList);
 
         // remote
-        registryBaseClient.remove(registryParamList);
+        registryBaseClient.remove(registryDataList);
 
         return true;
     }
@@ -223,19 +221,18 @@ public class XxlRegistryClient {
             return;
         }
 
-        // discovery multi
+        // discovery mult
         Map<String, TreeSet<String>> keyValueListData = registryBaseClient.discovery(keys);
-        if (keyValueListData!=null){
-            for (String keyItem : keyValueListData.keySet()){
+        if (keyValueListData!=null) {
+            for (String keyItem: keyValueListData.keySet()) {
 
                 // list > set
                 TreeSet<String> valueSet = new TreeSet<>();
                 valueSet.addAll(keyValueListData.get(keyItem));
 
-                discoveryData.put(keyItem,valueSet);
+                discoveryData.put(keyItem, valueSet);
             }
         }
-
         logger.info(">>>>>>>>>>> xxl-registry, refresh discovery data finish, discoveryData = {}", discoveryData);
     }
 
