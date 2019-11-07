@@ -36,7 +36,6 @@ $(function() {
                             }
                         }
                     },
-					{ data: 'version'},
 					{
 						data: 'status',
                         ordering: true,
@@ -170,7 +169,7 @@ $(function() {
             },
             env : {
                 required : true ,
-                rangelength:[4,255]
+                rangelength:[2,255]
             },
             key : {
                 required : true ,
@@ -184,7 +183,7 @@ $(function() {
             },
             env : {
                 required :'请输入'  ,
-                rangelength: '长度限制为[4~255]'
+                rangelength: '长度限制为[2~255]'
             },
             key : {
                 required :'请输入'  ,
@@ -273,7 +272,7 @@ $(function() {
             },
             env : {
                 required : true ,
-                rangelength:[4,255]
+                rangelength:[2,255]
             },
             key : {
                 required : true ,
@@ -287,7 +286,7 @@ $(function() {
             },
             env : {
                 required :'请输入'  ,
-                rangelength: '长度限制为[4~255]'
+                rangelength: '长度限制为[2~255]'
             },
             key : {
                 required :'请输入'  ,

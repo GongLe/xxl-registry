@@ -58,7 +58,6 @@
                                         <th name="env" >环境标识</th>
                                         <th name="key" >注册Key</th>
                                         <th name="data" >注册信息<#--注册Value有效数据--></th>
-                                        <th name="version" >版本</th>
                                         <th name="status" >状态<#--状态：0-正常、1-锁定、2-禁用--></th>
 					                  	<th>操作</th>
 					                </tr>
@@ -96,7 +95,7 @@
                             <div class="col-sm-9"><input type="text" class="form-control" name="key" maxlength="255" placeholder="请输入注册Key" ></div>
                         </div>
                         <div class="form-group">
-                            <label for="lastname" class="col-sm-3 control-label">注册信息 <font color="red">*</font></label>
+                            <label for="lastname" class="col-sm-3 control-label">注册信息 <font color="black">*</font></label>
                             <div class="col-sm-9">
                                 <textarea class="textarea" name="data" maxlength="60000" placeholder="请输入注册信息；限制为字符串数组JSON格式，如 [address,address2]" style="width: 100%; height: 100px; font-size: 14px; line-height: 18px; border: 1px solid #dddddd; padding: 10px;"></textarea>
                             </div>
@@ -146,7 +145,7 @@
                             <div class="col-sm-9"><input type="text" class="form-control" name="key" maxlength="255" placeholder="请输入注册Key" readonly ></div>
                         </div>
                         <div class="form-group">
-                            <label for="lastname" class="col-sm-3 control-label">注册信息 <font color="red">*</font></label>
+                            <label for="lastname" class="col-sm-3 control-label">注册信息 <font color="black">*</font></label>
                             <div class="col-sm-9">
                                 <textarea class="textarea" name="data" maxlength="60000" placeholder="请输入注册信息；限制为字符串数组JSON格式，如 [address,address2]" style="width: 100%; height: 100px; font-size: 14px; line-height: 18px; border: 1px solid #dddddd; padding: 10px;"></textarea>
                             </div>
