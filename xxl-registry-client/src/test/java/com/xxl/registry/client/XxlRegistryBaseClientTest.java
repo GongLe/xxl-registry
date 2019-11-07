@@ -33,7 +33,7 @@ public class XxlRegistryBaseClientTest {
 
         // remove test
         System.out.println("remove:" + registryClient.remove(registryParamList));
-        TimeUnit.SECONDS.sleep(2);
+//        TimeUnit.SECONDS.sleep(2);
 
         // discovery test
         System.out.println("discovery:" + registryClient.discovery(keys));
