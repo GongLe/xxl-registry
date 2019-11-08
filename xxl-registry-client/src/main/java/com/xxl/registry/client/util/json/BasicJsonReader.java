@@ -35,6 +35,7 @@ public class BasicJsonReader {
 		throw new IllegalArgumentException("Cannot parse JSON");
 	}
 
+
 	private List<Object> parseListInternal(String json) {
 		List<Object> list = new ArrayList<Object>();
 		json = trimLeadingCharacter(trimTrailingCharacter(json, ']'), '[');
@@ -45,6 +46,9 @@ public class BasicJsonReader {
 	}
 
 	private Object parseInternal(String json) {
+		if (json.equals("null")) {
+			return null;
+		}
 		if (json.startsWith("[")) {
 			return parseListInternal(json);
 		}

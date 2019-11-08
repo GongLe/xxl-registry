@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.*;
 
 /**
@@ -59,13 +60,13 @@ public class BasicJsonwriter {
      * @param json  "key":value or value
      */
     private void writeObjItem(String key, Object value, StringBuilder json) {
-        if ("serialVersionUID".equals(key)
-                || value == null
+
+        /*if ("serialVersionUID".equals(key)
                 || value instanceof Logger) {
             // pass
 
             return;
-        }
+        }*/
 
         // "key:"
         if (key != null) {
@@ -73,17 +74,20 @@ public class BasicJsonwriter {
         }
 
         // val
-        if (value instanceof String
+        if (value == null) {
+            json.append("null");
+        } else if (value instanceof String
+                || value instanceof Byte
                 || value instanceof CharSequence) {
             // string
 
             json.append(STR_SLASH).append(value.toString()).append(STR_SLASH);
-        } else if (value instanceof Integer
-                || value instanceof Long
+        } else if ( value instanceof Boolean
                 || value instanceof Short
-                || value instanceof Boolean
-                || value instanceof Double
+                || value instanceof Integer
+                || value instanceof Long
                 || value instanceof Float
+                || value instanceof Double
                 ) {
             // number
 
@@ -130,7 +134,7 @@ public class BasicJsonwriter {
             // bean
 
             json.append(STR_OBJECT_LEFT);
-            Field[] fields = getDeclaredFields(value);
+            Field[] fields = getDeclaredFields(value.getClass());
             if (fields.length > 0) {
                 for (Field field : fields) {
                     Object fieldObj = getFieldObject(field, value);
@@ -144,14 +148,34 @@ public class BasicJsonwriter {
         }
     }
 
-    private synchronized Field[] getDeclaredFields(Object obj) {
-        String cacheKey = obj.getClass().getName();
+    public synchronized Field[] getDeclaredFields(Class<?> clazz) {
+        String cacheKey = clazz.getName();
         if (cacheFields.containsKey(cacheKey)) {
             return cacheFields.get(cacheKey);
         }
-        Field[] fields = obj.getClass().getDeclaredFields();
+        Field[] fields = getAllDeclaredFields(clazz);    //clazz.getDeclaredFields();
         cacheFields.put(cacheKey, fields);
         return fields;
+    }
+
+    private Field[] getAllDeclaredFields(Class<?> clazz) {
+        List<Field> list = new ArrayList<Field>();
+        Class<?> current = clazz;
+
+        while (current != null && current != Object.class) {
+            Field[] fields = current.getDeclaredFields();
+
+            for (Field field : fields) {
+                if (Modifier.isStatic(field.getModifiers())) {
+                    continue;
+                }
+                list.add(field);
+            }
+
+            current = current.getSuperclass();
+        }
+
+        return list.toArray(new Field[list.size()]);
     }
 
     private synchronized Object getFieldObject(Field field, Object obj) {
