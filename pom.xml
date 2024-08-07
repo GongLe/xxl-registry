@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.xuxueli</groupId>
 	<artifactId>xxl-registry</artifactId>
-	<version>1.0.2-xcht-SNAPSHOT</version>
+	<version>1.0.2.XCHT-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>${project.artifactId}</name>
@@ -116,17 +116,22 @@
 					</plugin>
 				</plugins>
 			</build>
-			<distributionManagement>
-				<snapshotRepository>
-					<id>oss</id>
-					<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-				</snapshotRepository>
-				<repository>
-					<id>oss</id>
-					<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-				</repository>
-			</distributionManagement>
+
 		</profile>
 	</profiles>
 
+	<!--maven 构建发布私服-->
+	<distributionManagement>
+		<repository>
+			<id>xcht-release</id>
+			<name>xcht-release</name>
+			<url>http://maven.wangcai.cc/content/repositories/xcht-release</url>
+		</repository>
+
+		<snapshotRepository>
+			<id>xcht-snapshot</id>
+			<name>xcht-snapshot</name>
+			<url>http://maven.wangcai.cc/content/repositories/xcht-snapshot</url>
+		</snapshotRepository>
+	</distributionManagement>
 </project>
