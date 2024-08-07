@@ -22,7 +22,7 @@ import java.util.Map;
  * @author xuxueli 2018-11-29
  */
 @Controller
-@RequestMapping("/api")
+@RequestMapping("/mq/api")
 public class ApiController {
 
     @Resource
